@@ -88,33 +88,34 @@ contract('MusicDAO', function(accounts) {
     assert(passed, "contract did not error on multiple votes")
   });
 
-  // it("should not allow a votes for non-existant measure proposal", async function() {
-  //   let instance = await MusicDAO.new(100, 5)
-  //   console.log(await util.promisify(web3.eth.getBlockNumber)());
-  //   await instance.claim() // 1
-  //   let a = await instance.currentMeasureID();
-  //   await instance.propose("0x000000010101020202") // 2
-  //   await instance.vote(a) // 3
-  //   await waitNBlocks(2); // 5
-  //   console.log(await util.promisify(web3.eth.getBlockNumber)());
-  //   a = await instance.currentMeasureID();
-  //   await instance.propose("0x030303040404050505");
-  //   await instance.vote(a);
-  //   a = await instance.currentMeasureID();
-  //   await instance.propose("0x060606070707080808");
-  //   await instance.vote(a);
+  it("should be able to access notes, measures of song", async function() {
+    let instance = await MusicDAO.new(100, 5)
+    await instance.claim() // 1
+    let a = await instance.currentMeasureID();
+    await instance.propose("0x000000010101020202") // 2
+    await instance.vote(a) // 3
+    await waitNBlocks(2); // 5
+    a = await instance.currentMeasureID();
+    await instance.propose("0x030303040404050505");
+    await instance.vote(a);
+    await waitNBlocks(3); // 5
+    a = await instance.currentMeasureID();
+    await instance.propose("0x060606070707080808");
+    await instance.vote(a);
 
-  //   let measures = (await instance.getSongMeasures()).toNumber()
-  //   for (let i = 0; i < measures; i++) {
-  //     let measureID = (await instance.getSongMeasure(i)).toNumber()
-  //     console.log(i, measureID)
-  //     let noteStart = (await instance.getMeasure(measureID)).toNumber()
-  //     let noteEnd = (await instance.getMeasureLast(measureID)).toNumber()
-  //     console.log("Measure")
-  //     for (let j = noteStart; j < noteEnd; j++) {
-  //       let note = await instance.getNote(j)
-  //       console.log(note)
-  //     }
-  //   }
-  // });
+    let measures = (await instance.getSongMeasures()).toNumber()
+    assert(measures == 2, "should have 2 measures")
+    let  k = 0;
+    for (let i = 0; i < measures; i++) {
+      let measureID = (await instance.getSongMeasure(i)).toNumber()
+      let noteStart = (await instance.getMeasure(measureID)).toNumber()
+      let noteEnd = (await instance.getMeasureLast(measureID)).toNumber()
+      for (let j = noteStart; j < noteEnd; j++) {
+        let note = (await instance.getNote(j))[0].toNumber()
+        assert(note == k, "notes should ascend")
+        assert(note < 6, "notes should not go above 6")
+        k += 1;
+      }
+    }
+  });
 });

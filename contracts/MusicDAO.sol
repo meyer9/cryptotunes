@@ -81,6 +81,7 @@ contract MusicDAO {
         require(id < currentMeasureID, "can't vote for non-existant measure");
         if (block.number >= currentRoundStart + lengthRoundBlocks) {
             finalizeVoting();
+            currentRoundStart = block.number + 1;
         }
         require(nextVote[msg.sender] <= currentMeasure, "sender already voted");
         votes[id] += 1;
@@ -93,8 +94,9 @@ contract MusicDAO {
 
     function propose(bytes m) external {
         require(authorizedVoters[msg.sender], "sender is not authorized to propose");
-        if (block.number > currentRoundStart + lengthRoundBlocks) {
+        if (block.number >= currentRoundStart + lengthRoundBlocks) {
             finalizeVoting();
+            currentRoundStart = block.number + 1;
         }
         uint measureStart = currentNote;
         for (uint i = 0; i < m.length; i += 3) {
